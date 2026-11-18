@@ -1,0 +1,8 @@
+.vscode
+
+/target
+**/*.rs.bk
+
+.env
+.env.*
+*.pem
