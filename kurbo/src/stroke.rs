@@ -12,8 +12,9 @@ use crate::common::FloatFuncs;
 
 use crate::{
     Affine, Arc, BezPath, CubicBez, Line, ParamCurve, ParamCurveArclen, PathEl, PathSeg, Point,
-    QuadBez, Vec2, common::solve_quadratic,
+    QuadBez, Vec2,
 };
+use polycool::solve_quadratic;
 
 /// Defines the connection between two segments of a stroke.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

@@ -12,11 +12,9 @@ use arrayvec::ArrayVec;
 
 use crate::{
     Affine, BezPath, CubicBez, Line, ParamCurve, ParamCurveArclen, ParamCurveNearest, Point, Vec2,
-    common::{
-        GAUSS_LEGENDRE_COEFFS_16, factor_quartic_inner, solve_cubic, solve_itp_fallible,
-        solve_quadratic,
-    },
+    common::GAUSS_LEGENDRE_COEFFS_16,
 };
+use polycool::{factor_quartic_inner, solve_cubic, solve_itp_fallible, solve_quadratic};
 
 #[cfg(not(feature = "std"))]
 use crate::common::FloatFuncs;

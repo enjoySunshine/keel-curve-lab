@@ -7,7 +7,7 @@ use core::ops::Range;
 
 use arrayvec::ArrayVec;
 
-use crate::{Point, Rect, common};
+use crate::{Point, Rect};
 
 #[cfg(not(feature = "std"))]
 use crate::common::FloatFuncs;
@@ -119,7 +119,7 @@ pub trait ParamCurveArclen: ParamCurve {
             t_last = t;
             arclen_last - arclen
         };
-        common::solve_itp(f, 0.0, 1.0, epsilon, 1, 0.2, -arclen, total_arclen - arclen)
+        polycool::solve_itp(f, 0.0, 1.0, epsilon, 1, 0.2, -arclen, total_arclen - arclen)
     }
 }
 

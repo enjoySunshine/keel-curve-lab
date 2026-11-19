@@ -11,10 +11,8 @@ use arrayvec::ArrayVec;
 #[cfg(not(feature = "std"))]
 use crate::common::FloatFuncs;
 
-use crate::{
-    BezPath, CubicBez, ParamCurve, ParamCurveDeriv, PathSeg, Point, QuadBez, Vec2,
-    common::{solve_itp, solve_quadratic},
-};
+use crate::{BezPath, CubicBez, ParamCurve, ParamCurveDeriv, PathSeg, Point, QuadBez, Vec2};
+use polycool::{solve_itp, solve_quadratic};
 
 /// State used for computing an offset curve of a single cubic.
 struct CubicOffset {

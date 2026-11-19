@@ -203,4 +203,70 @@ mod tests {
         assert_eq!(roots.len(), 1);
         assert!(roots[0].abs() <= 1e-6);
     }
+
+    // The two ways the curve library can ask for roots of the same cubic
+    // must agree: the closed-form solver followed by filtering to [0, 1],
+    // and the interval solver. These feed the landing trigger time (height
+    // crossing) and the stroke/nearest point math respectively, so a
+    // divergence here would put the two ledgers out of sync.
+    #[test]
+    fn closed_form_filtered_matches_interval_solver() {
+        // (x + 1)(x - 0.3)(x - 0.8) = x^3 - 0.1x^2 - 0.86x + 0.24,
+        // a genuine cubic with three roots, two inside [0, 1] and one outside.
+        const COEFFS: [f64; 4] = [0.24, -0.86, -0.1, 1.0];
+
+        let mut closed_form: ArrayVec<f64, 3> =
+            crate::solve_cubic(COEFFS[0], COEFFS[1], COEFFS[2], COEFFS[3])
+                .into_iter()
+                .filter(|t| (0.0..=1.0).contains(t))
+                .collect();
+        closed_form.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let mut interval = Cubic::new(COEFFS).roots_between(0.0, 1.0, 1e-12);
+        interval.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        assert_eq!(closed_form.len(), 2);
+        assert_eq!(interval.len(), 2);
+        for (closed, bracketed) in closed_form.iter().zip(interval.iter()) {
+            assert!(
+                (closed - bracketed).abs() <= 1e-9,
+                "closed-form {closed} disagrees with interval root {bracketed}"
+            );
+        }
+        // The two in-range roots are 0.3 and 0.8.
+        assert!((interval[0] - 0.3).abs() < 1e-9);
+        assert!((interval[1] - 0.8).abs() < 1e-9);
+    }
+
+    // The landing curve from the design doc: its y-component is a quadratic
+    // (the cubic power coefficient vanishes), and the height-0.9 trigger
+    // times must match whether reached via the closed-form path or the
+    // bounded root solver.
+    #[test]
+    fn landing_curve_height_crossing_agrees() {
+        // y control points (0.73, 1.08, 1.08, 0.73) expanded to power basis,
+        // then shifted by the platform height 0.9.
+        let c0 = 0.73 - 0.9;
+        let c1 = 3.0 * (1.08 - 0.73);
+        let c2 = 3.0 * (0.73 - 2.0 * 1.08 + 1.08);
+        let c3 = 0.73 - 3.0 * 1.08 + 3.0 * 1.08 - 0.73;
+        assert_eq!(c3, 0.0);
+
+        let mut closed_form: ArrayVec<f64, 3> = crate::solve_cubic(c0, c1, c2, c3)
+            .into_iter()
+            .filter(|t| (0.0..=1.0).contains(t))
+            .collect();
+        closed_form.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let interval = Cubic::new([c0, c1, c2, c3]).roots_between(0.0, 1.0, 1e-12);
+
+        assert_eq!(closed_form.len(), 2);
+        assert_eq!(interval.len(), 2);
+        for (closed, bracketed) in closed_form.iter().zip(interval.iter()) {
+            assert!(
+                (closed - bracketed).abs() <= 1e-9,
+                "trigger time {closed} disagrees with interval root {bracketed}"
+            );
+        }
+    }
 }

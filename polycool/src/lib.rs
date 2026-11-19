@@ -25,6 +25,7 @@ mod poly;
 #[cfg(feature = "std")]
 mod poly_dyn;
 mod quadratic;
+mod solve;
 mod yuksel;
 
 #[cfg(any(test, feature = "arbitrary"))]
@@ -40,6 +41,10 @@ use libm as _;
 pub use poly::{Cubic, Poly, Quadratic, Quartic, Quintic};
 #[cfg(feature = "std")]
 pub use poly_dyn::PolyDyn;
+pub use solve::{
+    factor_quartic_inner, solve_cubic, solve_itp, solve_itp_fallible, solve_quadratic,
+    solve_quartic,
+};
 
 fn different_signs(x: f64, y: f64) -> bool {
     (x < 0.0) != (y < 0.0)

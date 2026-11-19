@@ -13,12 +13,13 @@ use arrayvec::ArrayVec;
 
 use crate::common::{
     GAUSS_LEGENDRE_COEFFS_8, GAUSS_LEGENDRE_COEFFS_8_HALF, GAUSS_LEGENDRE_COEFFS_16_HALF,
-    GAUSS_LEGENDRE_COEFFS_24_HALF, solve_cubic, solve_quadratic, solve_quartic,
+    GAUSS_LEGENDRE_COEFFS_24_HALF,
 };
 use crate::{
     Affine, Nearest, ParamCurve, ParamCurveArclen, ParamCurveArea, ParamCurveCurvature,
     ParamCurveDeriv, ParamCurveExtrema, ParamCurveNearest, PathEl, Point, QuadBez, Rect, Shape,
 };
+use polycool::{solve_cubic, solve_quadratic, solve_quartic};
 
 #[cfg(not(feature = "std"))]
 use crate::common::FloatFuncs;

@@ -4,6 +4,7 @@
 use arrayvec::ArrayVec;
 
 use crate::Quadratic;
+use crate::solve;
 
 #[cfg(feature = "libm")]
 #[allow(unused_imports, reason = "unused if libm and std are both around")]
@@ -24,58 +25,8 @@ impl Quadratic {
     ///
     /// Double-roots are only counted once.
     pub fn roots(&self) -> ArrayVec<f64, 2> {
-        let &[c, b, a] = self.coeffs();
-        let disc = b * b - 4.0 * a * c;
-        if disc.is_finite() {
-            let mut ret = ArrayVec::new();
-            let mut push = |r: f64| {
-                if r.is_finite() {
-                    ret.push(r);
-                }
-            };
-            if disc > 0.0 {
-                let q = -0.5 * (b + disc.sqrt().copysign(b));
-                let r0 = q / a;
-                let r1 = c / q;
-                push(r0.min(r1));
-                push(r0.max(r1));
-            } else if disc == 0.0 {
-                let root = -0.5 * b / a;
-                if root.is_finite() {
-                    push(root);
-                } else if c == 0.0 {
-                    // This is kurbo's behavior: the intention is that if the
-                    // whole thing is zero, return zero as a single root. I'm
-                    // not sure I love it.
-                    //
-                    // Bear in mind that this branch is not *only* for the
-                    // identically zero case: if a == c == 0.0 and b * b
-                    // underflows then we will end up here. In that case,
-                    // zero is the only root.
-                    push(0.0);
-                }
-            } else {
-                // No roots.
-            }
-            ret
-        } else {
-            // At least one of the coefficients was too large and triggered
-            // overflow.
-            //
-            // The exponent of f64 maxes out at 1023, so scaling down by
-            // 2^{-512} is enough to ensure that squaring doesn't overflow. We
-            // do an extra factor of 2^{-3} for some wiggle room. This can't
-            // completely destroy all the coefficients: because of the overflow,
-            // we know that at least one of them was big.
-            let scale = 2.0_f64.powi(-515);
-            // If we're infinite, just give up. (Otherwise, we'd stack overflow
-            // by repeatedly trying to rescale.)
-            if self.is_finite() {
-                (*self * scale).roots()
-            } else {
-                ArrayVec::new()
-            }
-        }
+        let &[c0, c1, c2] = self.coeffs();
+        solve::solve_quadratic(c0, c1, c2)
     }
 
     /// Returns the two distinct roots of this quadratic, but only if the
